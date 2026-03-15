@@ -1,0 +1,11 @@
+{
+  "name": "OnaFlix Notification Service",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "forwardPorts": [3004],
+  "portsAttributes": {
+    "3004": {
+      "label": "Notification Service",
+      "onAutoForward": "notify"
+    }
+  }
+}

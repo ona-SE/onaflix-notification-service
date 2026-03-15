@@ -1,0 +1,18 @@
+tasks:
+  installDeps:
+    name: Install dependencies
+    description: Install npm dependencies for the notification service.
+    command: |
+      npm install
+    triggeredBy:
+      - postDevcontainerStart
+
+services:
+  dev-server:
+    name: Dev Server
+    description: Run the notification service in development mode.
+    commands:
+      start: |
+        npm run dev
+      ready: |
+        curl -f http://localhost:3004/health
