@@ -1,0 +1,26 @@
+tasks:
+  installDeps:
+    name: Install dependencies
+    description: Install npm dependencies.
+    command: |
+      npm install
+    triggeredBy:
+      - postDevcontainerStart
+
+  test:
+    name: Run tests
+    description: Run the test suite.
+    command: |
+      npm test
+    triggeredBy:
+      - manual
+    dependsOn:
+      - installDeps
+
+services:
+  dev-server:
+    name: Dev Server
+    description: Run the notification service in dev mode.
+    commands:
+      start: npm run dev
+      ready: curl -f http://localhost:3004/health
