@@ -2,3 +2,6 @@ node_modules/
 .env
 *.log
 coverage/
+.pnp.cjs
+.pnp.loader.mjs
+.yarn/
