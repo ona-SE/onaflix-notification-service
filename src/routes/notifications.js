@@ -1,8 +1,6 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
-const url = require('url');
-const punycode = require('punycode');
 
 const router = express.Router();
 
@@ -78,24 +76,22 @@ router.get('/:id', (req, res) => {
   res.json(notification);
 });
 
-// Deprecated: punycode module (deprecated in Node 16+, removed in Node 21)
 function validateEmailDomain(email) {
   const domain = email.split('@')[1];
   if (!domain) return false;
   try {
-    const ascii = punycode.toASCII(domain);
-    return ascii.length > 0;
+    const { hostname } = new URL(`https://${domain}`);
+    return hostname.length > 0;
   } catch (err) {
     return false;
   }
 }
 
-// Deprecated: url.parse
 async function sendWebhook(notification) {
   const webhookUrl = process.env.WEBHOOK_URL;
   if (!webhookUrl) return;
 
-  const parsed = url.parse(webhookUrl);
+  const parsed = new URL(webhookUrl);
   if (parsed.protocol !== 'https:') {
     console.warn('Webhook URL is not HTTPS');
   }
@@ -110,7 +106,6 @@ async function sendWebhook(notification) {
   });
 }
 
-// Deprecated: Buffer constructor
 async function sendEmail(notification) {
   const emailPayload = {
     to: notification.userId,
@@ -118,8 +113,7 @@ async function sendEmail(notification) {
     html: notification.body,
   };
 
-  // Encode payload for transport
-  const encoded = new Buffer(JSON.stringify(emailPayload)).toString('base64');
+  const encoded = Buffer.from(JSON.stringify(emailPayload)).toString('base64');
   console.log(`Email queued: ${encoded.substring(0, 20)}...`);
 }
 
