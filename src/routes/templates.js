@@ -58,7 +58,6 @@ router.post('/:id/render', (req, res) => {
   }
 });
 
-// Deprecated: fs.exists (should use fs.access or fs.stat)
 router.get('/:id/export', (req, res) => {
   const template = templates.get(req.params.id);
   if (!template) {
@@ -66,15 +65,13 @@ router.get('/:id/export', (req, res) => {
   }
 
   const exportDir = path.join('/tmp', 'template-exports');
-  fs.exists(exportDir, (exists) => {
-    if (!exists) {
-      fs.mkdirSync(exportDir, { recursive: true });
-    }
+  if (!fs.existsSync(exportDir)) {
+    fs.mkdirSync(exportDir, { recursive: true });
+  }
 
-    const filePath = path.join(exportDir, `${template.id}.html`);
-    fs.writeFileSync(filePath, template.body);
-    res.json({ exported: filePath });
-  });
+  const filePath = path.join(exportDir, `${template.id}.html`);
+  fs.writeFileSync(filePath, template.body);
+  res.json({ exported: filePath });
 });
 
 module.exports = router;
