@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const url = require('url');
 require('dotenv').config();
 
 const notificationRoutes = require('./routes/notifications');
