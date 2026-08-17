@@ -1,7 +1,7 @@
 const express = require('express');
 const Handlebars = require('handlebars');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs/promises');
+const path = require('node:path');
 
 const router = express.Router();
 
@@ -58,23 +58,21 @@ router.post('/:id/render', (req, res) => {
   }
 });
 
-// Deprecated: fs.exists (should use fs.access or fs.stat)
-router.get('/:id/export', (req, res) => {
+router.get('/:id/export', async (req, res, next) => {
   const template = templates.get(req.params.id);
   if (!template) {
     return res.status(404).json({ error: 'Template not found' });
   }
 
   const exportDir = path.join('/tmp', 'template-exports');
-  fs.exists(exportDir, (exists) => {
-    if (!exists) {
-      fs.mkdirSync(exportDir, { recursive: true });
-    }
-
+  try {
+    await fs.mkdir(exportDir, { recursive: true });
     const filePath = path.join(exportDir, `${template.id}.html`);
-    fs.writeFileSync(filePath, template.body);
+    await fs.writeFile(filePath, template.body);
     res.json({ exported: filePath });
-  });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

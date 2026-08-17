@@ -4,16 +4,16 @@ Notification service for the OnaFlix platform. Handles email, push, webhook, and
 
 ## Stack
 
-- **Runtime:** Node.js 14
-- **Framework:** Express 4
+- **Runtime:** Node.js 20
+- **Framework:** Express 5
 - **Templates:** Handlebars
-- **HTTP Client:** node-fetch 2
+- **HTTP Client:** Node.js native Fetch API
 - **Email:** nodemailer
 
 ## Setup
 
 ```bash
-nvm use 14
+nvm use
 npm install
 npm run dev
 ```
