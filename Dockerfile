@@ -7,7 +7,7 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-COPY src ./src
+COPY --chown=node:node src ./src
 
 EXPOSE 3004
 

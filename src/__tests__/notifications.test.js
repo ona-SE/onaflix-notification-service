@@ -42,7 +42,8 @@ describe('Notification Service', () => {
     });
 
     it('dispatches webhooks using a WHATWG URL', async () => {
-      const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true });
+      const fetchSpy = jest.fn().mockResolvedValue({ ok: true });
+      global.fetch = fetchSpy;
       process.env.WEBHOOK_URL = 'https://example.com/webhook';
 
       const res = await request(app)
@@ -53,7 +54,7 @@ describe('Notification Service', () => {
       expect(fetchSpy).toHaveBeenCalledWith(process.env.WEBHOOK_URL, expect.any(Object));
 
       delete process.env.WEBHOOK_URL;
-      fetchSpy.mockRestore();
+      delete global.fetch;
     });
   });
 
