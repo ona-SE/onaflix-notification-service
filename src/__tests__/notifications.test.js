@@ -1,5 +1,7 @@
+const fs = require('node:fs/promises');
 const request = require('supertest');
 const app = require('../index');
+const { validateEmailDomain } = require('../routes/notifications');
 
 describe('Notification Service', () => {
   describe('GET /health', () => {
@@ -25,6 +27,41 @@ describe('Notification Service', () => {
         .post('/api/notifications/send')
         .send({ title: 'Missing fields' });
       expect(res.status).toBe(400);
+    });
+
+    it('encodes email notifications with the supported Buffer API', async () => {
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+      const res = await request(app)
+        .post('/api/notifications/send')
+        .send({ userId: 'user@example.com', type: 'email', title: 'Test', channel: 'email' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.status).toBe('sent');
+      logSpy.mockRestore();
+    });
+
+    it('dispatches webhooks using a WHATWG URL', async () => {
+      const fetchSpy = jest.fn().mockResolvedValue({ ok: true });
+      global.fetch = fetchSpy;
+      process.env.WEBHOOK_URL = 'https://example.com/webhook';
+
+      const res = await request(app)
+        .post('/api/notifications/send')
+        .send({ userId: 'user-1', type: 'webhook', title: 'Test', channel: 'webhook' });
+
+      expect(res.status).toBe(201);
+      expect(fetchSpy).toHaveBeenCalledWith(process.env.WEBHOOK_URL, expect.any(Object));
+
+      delete process.env.WEBHOOK_URL;
+      delete global.fetch;
+    });
+  });
+
+  describe('email domain validation', () => {
+    it('supports internationalized domains without punycode', () => {
+      expect(validateEmailDomain('user@mañana.com')).toBe(true);
+      expect(validateEmailDomain('invalid-email')).toBe(false);
     });
   });
 
@@ -71,6 +108,16 @@ describe('Notification Service', () => {
         .post('/api/templates/nonexistent/render')
         .send({});
       expect(res.status).toBe(404);
+    });
+  });
+
+  describe('GET /api/templates/:id/export', () => {
+    it('exports a template using asynchronous filesystem APIs', async () => {
+      const res = await request(app).get('/api/templates/welcome/export');
+
+      expect(res.status).toBe(200);
+      await expect(fs.readFile(res.body.exported, 'utf8')).resolves.toContain('<h1>Welcome');
+      await fs.unlink(res.body.exported);
     });
   });
 });
